@@ -56,8 +56,8 @@ exports.login = async (req, res) => {
     if (foundUser) {
       const passwordsMatch = await bcrypt.compare(password, foundUser.password);
       if (passwordsMatch) {
-        const { id, email } = foundUser;
-        const token = genToken({ id, email });
+        const { id, email, role } = foundUser;
+        const token = genToken({ id, email, role });
         return res.send({ email, token });
       }
     }
