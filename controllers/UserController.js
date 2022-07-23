@@ -43,3 +43,27 @@ exports.registration = async (req, res) => {
     return res.status(422).send({ msg: err.message });
   }
 };
+
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(422).send({ msg: "All inputs required" });
+
+  try {
+    const foundUser = await User.findOne({
+      where: { email },
+    });
+
+    if (foundUser) {
+      const passwordsMatch = await bcrypt.compare(password, foundUser.password);
+      if (passwordsMatch) {
+        const { id, email } = foundUser;
+        const token = genToken({ id, email });
+        return res.send({ email, token });
+      }
+    }
+    return res.status(401).send({ msg: "Invalid Credentials" });
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
