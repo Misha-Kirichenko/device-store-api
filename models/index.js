@@ -13,46 +13,39 @@ const Rating = require("./Rating.js")(conn, DataTypes);
 User.hasOne(Basket);
 Basket.belongsTo(User);
 
-User.hasMany(Rating, { foreignKey: { allowNull: false }, onDelete: "CASCADE" });
+User.hasMany(Rating, { foreignKey: { allowNull: false } });
 Rating.belongsTo(User, {
   foreignKey: { allowNull: false },
-  onDelete: "CASCADE",
 });
 
 Basket.hasMany(BasketDevice, {
   foreignKey: { allowNull: false },
-  onDelete: "CASCADE",
 });
 BasketDevice.belongsTo(Basket);
 
 Type.hasMany(Device, {
   foreignKey: { allowNull: false },
-  onDelete: "CASCADE",
 });
 Device.belongsTo(Type);
 
 Brand.hasMany(Device, {
   foreignKey: { allowNull: false },
-  onDelete: "CASCADE",
 });
 Device.belongsTo(Brand);
 
 Device.hasMany(Rating, {
   foreignKey: { allowNull: false },
-  onDelete: "CASCADE",
 });
 Rating.belongsTo(Device);
 
 Device.hasMany(BasketDevice, {
   foreignKey: { allowNull: false },
-  onDelete: "CASCADE",
 });
 BasketDevice.belongsTo(Device);
 
 Device.hasMany(DeviceInfo, {
   as: "info",
   foreignKey: { allowNull: false },
-  onDelete: "CASCADE",
 });
 DeviceInfo.belongsTo(Device);
 
