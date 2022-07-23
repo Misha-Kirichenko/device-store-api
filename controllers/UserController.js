@@ -14,8 +14,8 @@ const genToken = (tokenParams) => {
 
 exports.registration = async (req, res) => {
   const { body } = req;
-  const { email, password } = req.body;
-  if (!email || !password)
+  const { email, password, fullName } = req.body;
+  if (!email || !password || !fullName)
     return res.status(422).send({ msg: "All inputs required" });
 
   const errors = [];
