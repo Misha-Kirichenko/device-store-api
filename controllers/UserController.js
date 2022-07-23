@@ -1,12 +1,11 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
-const { SECRET_KEY } = process.env;
 
 const { validEmail, validPassword } = require("../helpers/validator");
 
 const genToken = (tokenParams) => {
-  const token = jwt.sign(tokenParams, SECRET_KEY, {
+  const token = jwt.sign(tokenParams, process.env.SECRET_KEY, {
     expiresIn: "24h",
   });
   return token;
