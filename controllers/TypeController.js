@@ -15,7 +15,20 @@ exports.addType = async (req, res) => {
   if (!name) return res.status(422).send({ msg: "Name is required!" });
   try {
     const created = await Type.create({ name });
-    if (created) return res.send(await this.getAll(req, res));
+    if (created) this.getAll(req, res);
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
+
+exports.removeType = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleted = await Type.destroy({
+      where: { id },
+    });
+    if (deleted) this.getAll(req, res);
+    else return res.status(404).send({ msg: `row with id:${id} not found!` });
   } catch (err) {
     return res.status(422).send({ msg: err.message });
   }
