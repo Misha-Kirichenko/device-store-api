@@ -1,6 +1,6 @@
 const { Type } = require("../models");
 
-exports.getAll = async (req, res) => {
+exports.all = async (req, res) => {
   try {
     const all = await Type.findAll();
     return res.send(all);
@@ -9,32 +9,32 @@ exports.getAll = async (req, res) => {
   }
 };
 
-exports.addType = async (req, res) => {
+exports.add = async (req, res) => {
   const { name } = req.body;
 
   if (!name) return res.status(422).send({ msg: "Name is required!" });
   try {
     const created = await Type.create({ name });
-    if (created) this.getAll(req, res);
+    if (created) this.all(req, res);
   } catch (err) {
     return res.status(422).send({ msg: err.message });
   }
 };
 
-exports.removeType = async (req, res) => {
+exports.remove = async (req, res) => {
   const { id } = req.params;
   try {
     const deleted = await Type.destroy({
       where: { id },
     });
-    if (deleted) this.getAll(req, res);
+    if (deleted) this.all(req, res);
     else return res.status(404).send({ msg: `row with id:${id} not found!` });
   } catch (err) {
     return res.status(422).send({ msg: err.message });
   }
 };
 
-exports.editType = async (req, res) => {
+exports.edit = async (req, res) => {
   const { id } = req.params;
   try {
     if (!req.body.hasOwnProperty("name")) {
@@ -54,7 +54,7 @@ exports.editType = async (req, res) => {
       }
     );
 
-    if (updated) this.getAll(req, res);
+    if (updated) this.all(req, res);
     else return res.status(404).send({ msg: `row with id:${id} not found!` });
   } catch (err) {
     return res.status(422).send({ msg: err.message });
