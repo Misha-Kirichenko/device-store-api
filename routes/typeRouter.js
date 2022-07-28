@@ -5,12 +5,12 @@ const TypeController = require("../controllers/TypeController");
 
 router
   .route("/")
-  .get(verifyToken, TypeController.getAll)
-  .post([verifyToken, checkRole], TypeController.addType);
+  .get(verifyToken, TypeController.all)
+  .post([verifyToken, checkRole], TypeController.add);
 
 router
   .route("/:id")
-  .delete([verifyToken, checkRole], TypeController.removeType)
-  .patch([verifyToken, checkRole], TypeController.editType);
+  .delete([verifyToken, checkRole], TypeController.remove)
+  .patch([verifyToken, checkRole], TypeController.edit);
 
 module.exports = router;
