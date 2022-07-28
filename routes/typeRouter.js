@@ -8,6 +8,9 @@ router
   .get(verifyToken, TypeController.getAll)
   .post([verifyToken, checkRole], TypeController.addType);
 
-router.delete("/:id", [verifyToken, checkRole], TypeController.removeType);
+router
+  .route("/:id")
+  .delete([verifyToken, checkRole], TypeController.removeType)
+  .patch([verifyToken, checkRole], TypeController.editType);
 
 module.exports = router;

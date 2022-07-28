@@ -33,3 +33,30 @@ exports.removeType = async (req, res) => {
     return res.status(422).send({ msg: err.message });
   }
 };
+
+exports.editType = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (!req.body.hasOwnProperty("name")) {
+      return res.status(422).send({ msg: "type name is required" });
+    }
+
+    const { name } = req.body;
+
+    if (!name.trim()) {
+      return res.status(422).send({ msg: "invalid name passed" });
+    }
+
+    const updated = await Type.update(
+      { name },
+      {
+        where: { id },
+      }
+    );
+
+    if (updated) this.getAll(req, res);
+    else return res.status(404).send({ msg: `row with id:${id} not found!` });
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
