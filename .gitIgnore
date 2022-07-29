@@ -1,4 +1,4 @@
 *.jpg
-!img/device-imgs/.gitkeep 
+*.png
 /node_modules
 .env
