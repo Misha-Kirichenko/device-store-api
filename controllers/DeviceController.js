@@ -4,6 +4,15 @@ const fs = require("fs");
 
 const { Device } = require("../models");
 
+exports.all = async (req, res) => {
+  try {
+    const all = await Device.findAll();
+    return res.send(all);
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
+
 exports.add = async (req, res) => {
   const { name, price, brandId, typeId, descr } = req.body;
   const { img } = req.files;
@@ -55,10 +64,10 @@ exports.add = async (req, res) => {
         descr,
         img: `device-imgs/${fileName}`,
       });
-
-      if (deviceCreated) return res.send({ msg: "Device created!" });
+      if (deviceCreated) this.all(req, res);
+    } else {
+      return res.status(422).send({ errors });
     }
-    return res.status(422).send({ errors });
   } catch (err) {
     return res.status(422).send({ msg: err.message });
   }
