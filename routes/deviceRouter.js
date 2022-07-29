@@ -5,12 +5,12 @@ const DeviceController = require("../controllers/DeviceController");
 
 router
   .route("/")
-  .get([verifyToken], DeviceController.all)
+  .get(verifyToken, DeviceController.all)
   .post([verifyToken, checkRole], DeviceController.add);
 
 router
   .route("/:id")
-  .get([verifyToken], DeviceController.all)
+  .get(verifyToken, DeviceController.one)
   .delete([verifyToken, checkRole], DeviceController.remove);
 
 module.exports = router;

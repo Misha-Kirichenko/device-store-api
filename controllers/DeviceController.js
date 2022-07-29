@@ -94,3 +94,14 @@ exports.remove = async (req, res) => {
     return res.status(422).send({ msg: err.message });
   }
 };
+
+exports.one = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const one = await Device.findOne({ where: { id } });
+    if (one) return res.send(one);
+    else res.status(404).send({ msg: `row with id:${id} not found!` });
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
