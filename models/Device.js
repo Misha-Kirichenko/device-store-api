@@ -5,6 +5,7 @@ module.exports = (conn, DataTypes) => {
     price: { type: DataTypes.INTEGER, allowNull: false },
     rating: { type: DataTypes.INTEGER, defaultValue: 0 },
     img: { type: DataTypes.STRING, allowNull: false },
+    descr: { type: DataTypes.TEXT, allowNull: false },
   });
   return Device;
 };
