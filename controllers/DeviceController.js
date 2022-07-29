@@ -2,11 +2,13 @@ const uuid = require("uuid");
 const path = require("path");
 const fs = require("fs");
 
-const { Device } = require("../models");
+const { Device, Type, Brand } = require("../models");
 
 exports.all = async (req, res) => {
   try {
-    const all = await Device.findAll();
+    const all = await Device.findAll({
+      include: [{ model: Type }, { model: Brand }],
+    });
     return res.send(all);
   } catch (err) {
     return res.status(422).send({ msg: err.message });
@@ -98,7 +100,10 @@ exports.remove = async (req, res) => {
 exports.one = async (req, res) => {
   const { id } = req.params;
   try {
-    const one = await Device.findOne({ where: { id } });
+    const one = await Device.findOne({
+      where: { id },
+      include: [{ model: Type }, { model: Brand }],
+    });
     if (one) return res.send(one);
     else res.status(404).send({ msg: `row with id:${id} not found!` });
   } catch (err) {
