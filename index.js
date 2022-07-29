@@ -25,5 +25,10 @@ start();
 app.use(express.static(path.resolve(__dirname, "img")));
 app.use(cors());
 app.use(express.json());
-app.use(fileUpload({}));
+app.use(
+  fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, //10MB in bytes
+    abortOnLimit: true,
+  })
+);
 app.use("/api", router);
