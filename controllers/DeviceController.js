@@ -72,3 +72,25 @@ exports.add = async (req, res) => {
     return res.status(422).send({ msg: err.message });
   }
 };
+
+exports.remove = async (req, res) => {
+  const { id } = req.params;
+  let deviceRow;
+
+  try {
+    deviceRow = await Device.findOne({ where: { id } });
+    if (!deviceRow)
+      return res.status(404).send({ msg: `row with id:${id} not found!` });
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+
+  try {
+    const { img: imgPath } = deviceRow;
+    fs.unlinkSync(`./img/${imgPath}`);
+    const deleted = await Device.destroy({ where: { id } });
+    if (deleted) this.all(req, res);
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
