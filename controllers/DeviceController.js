@@ -8,7 +8,9 @@ const { Device, Type, Brand } = require("../models");
 exports.all = async (req, res) => {
   const limit = 2;
   const queryParams = {};
-  const { brandId, typeId, minPrice, maxPrice, p } = req.query;
+
+  const { brandId, typeId, minPrice, maxPrice, p, search, sortBy, order } =
+    req.query;
 
   if (brandId) queryParams.brandId = brandId;
   if (typeId) queryParams.typeId = typeId;
@@ -18,10 +20,17 @@ exports.all = async (req, res) => {
       [Op.gte]: minPrice,
     };
   }
+
   if (maxPrice) {
     queryParams.price = {
       ...queryParams.price,
       [Op.lte]: maxPrice,
+    };
+  }
+
+  if (search) {
+    queryParams.name = {
+      [Op.like]: `%${search}%`,
     };
   }
 
@@ -31,11 +40,22 @@ exports.all = async (req, res) => {
     if (Object.keys(queryParams).length) {
       queryObj = { ...queryObj, where: queryParams };
     }
+
     if (p) {
       const offset = p * limit - limit;
       queryObj.limit = limit;
       queryObj.offset = offset;
     }
+
+    if (sortBy) {
+      queryObj.order = [[sortBy]];
+      if (order) queryObj.order[0].push(order);
+      else queryObj.order[0].push("ASC");
+    }
+
+    queryObj.attributes = {
+      exclude: ["typeId", "brandId"],
+    };
 
     const all = await Device.findAll(queryObj);
 
