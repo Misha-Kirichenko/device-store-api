@@ -148,7 +148,11 @@ exports.remove = async (req, res) => {
 
   try {
     const { img: imgPath } = deviceRow;
-    fs.unlinkSync(`./img/${imgPath}`);
+
+    if (!fs.existsSync(`./img/${imgPath}`)) {
+      fs.unlinkSync(`./img/${imgPath}`);
+    }
+
     const deleted = await Device.destroy({ where: { id } });
     if (deleted) this.all(req, res);
   } catch (err) {
@@ -239,14 +243,43 @@ exports.update = async (req, res) => {
 
       if (errors.length) return res.status(422).send({ errors });
       else {
-        const { img } = req.files;
-        const { img: imgPath } = found;
-        fs.unlinkSync(`./img/${imgPath}`);
-        await img.mv(path.resolve(__dirname, "..", uploadPath, fileName));
+        if (updateObj.img) {
+          const { img } = req.files;
+          const { img: imgPath } = found;
+          fs.unlinkSync(`./img/${imgPath}`);
+          await img.mv(path.resolve(__dirname, "..", uploadPath, fileName));
+        }
+
         const deviceUpdate = await Device.update(updateObj, { where: { id } });
         if (deviceUpdate) this.all(req, res);
       }
     } else res.status(404).send({ msg: `row with id:${id} not found!` });
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
+
+exports.massRemove = async (req, res) => {
+  const { id_arr } = req.body;
+  try {
+    const foundDevices = await Device.findAndCountAll({
+      where: { id: { [Op.in]: id_arr } },
+    });
+
+    if (foundDevices.count) {
+      foundDevices.rows.forEach((device) => {
+        if (fs.existsSync(`./img/${device.img}`)) {
+          fs.unlinkSync(`./img/${device.img}`);
+        }
+      });
+      const deleted = await Device.destroy({
+        where: { id: { [Op.in]: id_arr } },
+      });
+
+      if (deleted) this.all(req, res);
+    } else {
+      res.status(404).send({ msg: "Nothing to delete" });
+    }
   } catch (err) {
     return res.status(422).send({ msg: err.message });
   }
