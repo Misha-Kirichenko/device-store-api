@@ -4,6 +4,8 @@ const path = require("path");
 const fs = require("fs");
 
 const { Device, Type, Brand } = require("../models");
+const whiteList = ["image/jpeg", "image/png"];
+const uploadPath = "./img/device-imgs";
 
 exports.all = async (req, res) => {
   const limit = 2;
@@ -13,7 +15,9 @@ exports.all = async (req, res) => {
     req.query;
 
   if (brandId) queryParams.brandId = brandId;
+
   if (typeId) queryParams.typeId = typeId;
+
   if (minPrice) {
     queryParams.price = {
       ...queryParams.price,
@@ -66,9 +70,7 @@ exports.all = async (req, res) => {
 };
 
 exports.add = async (req, res) => {
-  const { name, price, brandId, typeId, descr } = req.body;
-  const whiteList = ["image/jpeg", "image/png"];
-  const uploadPath = "./img/device-imgs";
+  const { name, price, brandId, typeId, descr, totalAmount } = req.body;
   const errors = [];
 
   try {
@@ -78,12 +80,12 @@ exports.add = async (req, res) => {
       errors.push("unsupported file extension");
     }
 
-    if (!name) {
+    if (!name || !name.trim()) {
       errors.push("name is required");
     }
 
     if (!price || isNaN(price)) {
-      errors.push("no price or invalid price passed");
+      errors.push("no price or invalid value has been passed");
     }
 
     if (!brandId) {
@@ -92,6 +94,10 @@ exports.add = async (req, res) => {
 
     if (!typeId) {
       errors.push("type id is required");
+    }
+
+    if (!totalAmount || isNaN(totalAmount)) {
+      errors.push("no total amount or invalid value has been pased");
     }
 
     if (!descr) {
@@ -116,6 +122,7 @@ exports.add = async (req, res) => {
         brandId,
         typeId,
         descr,
+        totalAmount,
         img: `device-imgs/${fileName}`,
       });
       if (deviceCreated) this.all(req, res);
@@ -158,6 +165,88 @@ exports.one = async (req, res) => {
     });
     if (one) return res.send(one);
     else res.status(404).send({ msg: `row with id:${id} not found!` });
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
+
+exports.update = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const found = await Device.findOne({ where: { id } });
+    let fileName;
+
+    if (found) {
+      const updateObj = {};
+      const errors = [];
+      const { name, price, brandId, typeId, descr, totalAmount } = req.body;
+
+      if (
+        !name &&
+        !price &&
+        !brandId &&
+        !typeId &&
+        !descr &&
+        !totalAmount &&
+        !req.files
+      ) {
+        return res
+          .status(433)
+          .send({ msg: "At least one field must be passed to update device" });
+      }
+
+      if (name) {
+        if (!name.trim()) errors.push("Invalid name has been passed");
+        else updateObj.name = name;
+      }
+
+      if (price) {
+        if (isNaN(price)) errors.push("Invalid price has been passed");
+        else updateObj.price = price;
+      }
+
+      if (brandId) {
+        if (!brandId.trim()) errors.push("Invalid brandId has been passed");
+        else updateObj.brandId = brandId;
+      }
+
+      if (typeId) {
+        if (!typeId.trim()) errors.push("Invalid typeId has been passed");
+        else updateObj.typeId = typeId;
+      }
+
+      if (descr) {
+        if (!descr.trim()) errors.push("Invalid descr has been passed");
+        else updateObj.descr = descr;
+      }
+
+      if (totalAmount) {
+        if (isNaN(totalAmount))
+          errors.push("Invalid totalAmount has been passed");
+        else updateObj.totalAmount = totalAmount;
+      }
+
+      if (req.files) {
+        if (!whiteList.includes(req.files.img.mimetype))
+          errors.push("unsupported file extension");
+        else {
+          const imgInfo = req.files.img.name.split(".");
+          const imgExt = imgInfo[imgInfo.length - 1];
+          fileName = `${uuid.v4()}.${imgExt}`;
+          updateObj.img = `device-imgs/${fileName}`;
+        }
+      }
+
+      if (errors.length) return res.status(422).send({ errors });
+      else {
+        const { img } = req.files;
+        const { img: imgPath } = found;
+        fs.unlinkSync(`./img/${imgPath}`);
+        await img.mv(path.resolve(__dirname, "..", uploadPath, fileName));
+        const deviceUpdate = await Device.update(updateObj, { where: { id } });
+        if (deviceUpdate) this.all(req, res);
+      }
+    } else res.status(404).send({ msg: `row with id:${id} not found!` });
   } catch (err) {
     return res.status(422).send({ msg: err.message });
   }

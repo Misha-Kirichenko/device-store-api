@@ -5,6 +5,10 @@ const DeviceController = require("../controllers/DeviceController");
 
 router.route("/").get(DeviceController.all).post(DeviceController.add);
 
-router.route("/:id").get(DeviceController.one).delete(DeviceController.remove);
+router
+  .route("/:id")
+  .get(DeviceController.one)
+  .delete(DeviceController.remove)
+  .patch(DeviceController.update);
 
 module.exports = router;
