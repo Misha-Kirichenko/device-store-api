@@ -3,14 +3,8 @@ const verifyToken = require("../middlewares/verifyToken.js");
 const checkRole = require("../middlewares/checkRole.js");
 const DeviceController = require("../controllers/DeviceController");
 
-router
-  .route("/")
-  .get(verifyToken, DeviceController.all)
-  .post([verifyToken, checkRole], DeviceController.add);
+router.route("/").get(DeviceController.all).post(DeviceController.add);
 
-router
-  .route("/:id")
-  .get(verifyToken, DeviceController.one)
-  .delete([verifyToken, checkRole], DeviceController.remove);
+router.route("/:id").get(DeviceController.one).delete(DeviceController.remove);
 
 module.exports = router;

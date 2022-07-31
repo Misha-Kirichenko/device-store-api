@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const uuid = require("uuid");
 const path = require("path");
 const fs = require("fs");
@@ -5,10 +6,39 @@ const fs = require("fs");
 const { Device, Type, Brand } = require("../models");
 
 exports.all = async (req, res) => {
+  const limit = 2;
+  const queryParams = {};
+  const { brandId, typeId, minPrice, maxPrice, p } = req.query;
+
+  if (brandId) queryParams.brandId = brandId;
+  if (typeId) queryParams.typeId = typeId;
+  if (minPrice) {
+    queryParams.price = {
+      ...queryParams.price,
+      [Op.gte]: minPrice,
+    };
+  }
+  if (maxPrice) {
+    queryParams.price = {
+      ...queryParams.price,
+      [Op.lte]: maxPrice,
+    };
+  }
+
   try {
-    const all = await Device.findAll({
-      include: [{ model: Type }, { model: Brand }],
-    });
+    let queryObj = { include: [{ model: Type }, { model: Brand }] };
+
+    if (Object.keys(queryParams).length) {
+      queryObj = { ...queryObj, where: queryParams };
+    }
+    if (p) {
+      const offset = p * limit - limit;
+      queryObj.limit = limit;
+      queryObj.offset = offset;
+    }
+
+    const all = await Device.findAll(queryObj);
+
     return res.send(all);
   } catch (err) {
     return res.status(422).send({ msg: err.message });
@@ -17,13 +47,14 @@ exports.all = async (req, res) => {
 
 exports.add = async (req, res) => {
   const { name, price, brandId, typeId, descr } = req.body;
-  const { img } = req.files;
   const whiteList = ["image/jpeg", "image/png"];
   const uploadPath = "./img/device-imgs";
   const errors = [];
 
   try {
-    if (!whiteList.includes(img.mimetype)) {
+    if (!req.files) {
+      errors.push("image is required");
+    } else if (!whiteList.includes(req.files.img.mimetype)) {
       errors.push("unsupported file extension");
     }
 
@@ -48,6 +79,7 @@ exports.add = async (req, res) => {
     }
 
     if (!errors.length) {
+      const { img } = req.files;
       const imgInfo = img.name.split(".");
       const imgExt = imgInfo[imgInfo.length - 1];
       const fileName = `${uuid.v4()}.${imgExt}`;
