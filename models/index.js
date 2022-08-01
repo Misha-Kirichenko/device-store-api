@@ -4,7 +4,6 @@ const User = require("./User.js")(conn, DataTypes);
 const Device = require("./Device.js")(conn, DataTypes);
 const Basket = require("./Basket.js")(conn, DataTypes);
 const BasketDevice = require("./BasketDevice.js")(conn, DataTypes);
-const DeviceInfo = require("./DeviceInfo.js")(conn, DataTypes);
 const Type = require("./Type.js")(conn, DataTypes);
 const Brand = require("./Brand.js")(conn, DataTypes);
 const TypeBrand = require("./TypeBrand.js")(conn, DataTypes);
@@ -43,12 +42,6 @@ Device.hasMany(BasketDevice, {
 });
 BasketDevice.belongsTo(Device);
 
-Device.hasMany(DeviceInfo, {
-  as: "info",
-  foreignKey: { allowNull: false },
-});
-DeviceInfo.belongsTo(Device);
-
 Type.belongsToMany(Brand, { through: TypeBrand });
 Brand.belongsToMany(Type, { through: TypeBrand });
 
@@ -61,5 +54,4 @@ module.exports = {
   Brand,
   Rating,
   TypeBrand,
-  DeviceInfo,
 };
