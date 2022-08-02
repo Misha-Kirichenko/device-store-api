@@ -1,7 +1,6 @@
 const { Op } = require("sequelize");
 const uuid = require("uuid");
 const path = require("path");
-const { conn } = require("../config");
 const fs = require("fs");
 
 const { Device, Type, Brand, Rating } = require("../models");
