@@ -3,7 +3,7 @@ const uuid = require("uuid");
 const path = require("path");
 const fs = require("fs");
 
-const { Device, Type, Brand } = require("../models");
+const { Device, Type, Brand, Rating } = require("../models");
 const whiteList = ["image/jpeg", "image/png"];
 const uploadPath = "./img/device-imgs";
 
@@ -39,7 +39,9 @@ exports.all = async (req, res) => {
   }
 
   try {
-    let queryObj = { include: [{ model: Type }, { model: Brand }] };
+    let queryObj = {
+      include: [{ model: Type }, { model: Brand }, { model: Rating }],
+    };
 
     if (Object.keys(queryParams).length) {
       queryObj = { ...queryObj, where: queryParams };

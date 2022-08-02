@@ -1,8 +1,4 @@
-const { Rating, Device } = require("../models");
-
-exports.get = async (req, res) => {
-  res.send({ user: req.user });
-};
+const { Rating, Brand, Type, Device } = require("../models");
 
 exports.add = async (req, res) => {
   const errors = [];
@@ -33,7 +29,12 @@ exports.add = async (req, res) => {
 
     try {
       const addedRate = await Rating.create({ rate, userId, deviceId });
-      return res.send({ addedRate });
+      if (addedRate)
+        return res.send(
+          await Device.findAll({
+            include: [{ model: Type }, { model: Brand }, { model: Rating }],
+          })
+        );
     } catch (err) {
       return res.status(422).send({ msg: err.message });
     }
@@ -42,4 +43,20 @@ exports.add = async (req, res) => {
   return res.status(422).send({ errors });
 };
 
-exports.remove = async (req, res) => {};
+exports.remove = async (req, res) => {
+  const { id: deviceId } = req.params;
+  try {
+    const deleted = await Rating.destroy({
+      where: { deviceId },
+    });
+    if (deleted)
+      return res.send(
+        await Device.findAll({
+          include: [{ model: Type }, { model: Brand }, { model: Rating }],
+        })
+      );
+    return res.status(404).send({ msg: "Device rating wasn't found" });
+  } catch (err) {
+    return res.status(422).send({ msg: err.message });
+  }
+};
