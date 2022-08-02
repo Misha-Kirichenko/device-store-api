@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const uuid = require("uuid");
 const path = require("path");
+const { conn } = require("../config");
 const fs = require("fs");
 
 const { Device, Type, Brand, Rating } = require("../models");
@@ -167,7 +168,7 @@ exports.one = async (req, res) => {
   try {
     const one = await Device.findOne({
       where: { id },
-      include: [{ model: Type }, { model: Brand }],
+      include: [{ model: Type }, { model: Brand }, { model: Rating }],
     });
     if (one) return res.send(one);
     else res.status(404).send({ msg: `row with id:${id} not found!` });
