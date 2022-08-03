@@ -3,7 +3,15 @@ const uuid = require("uuid");
 const path = require("path");
 const fs = require("fs");
 
-const { Device, Type, Brand, Rating } = require("../models");
+const {
+  Device,
+  Type,
+  Brand,
+  Rating,
+  Detail,
+  DeviceDetail,
+} = require("../models");
+
 const whiteList = ["image/jpeg", "image/png"];
 const uploadPath = "./img/device-imgs";
 
@@ -40,7 +48,12 @@ exports.all = async (req, res) => {
 
   try {
     let queryObj = {
-      include: [{ model: Type }, { model: Brand }, { model: Rating }],
+      include: [
+        { model: Type },
+        { model: Brand },
+        { model: Rating },
+        { model: Detail },
+      ],
     };
 
     if (Object.keys(queryParams).length) {
@@ -72,7 +85,9 @@ exports.all = async (req, res) => {
 };
 
 exports.add = async (req, res) => {
-  const { name, price, brandId, typeId, descr, totalAmount } = req.body;
+  const { name, price, brandId, typeId, descr, totalAmount, details } =
+    req.body;
+  const detailsArr = JSON.parse(details);
   const errors = [];
 
   try {
@@ -80,6 +95,20 @@ exports.add = async (req, res) => {
       errors.push("image is required");
     } else if (!whiteList.includes(req.files.img.mimetype)) {
       errors.push("unsupported file extension");
+    }
+
+    if (!Array.isArray(detailsArr)) {
+      errors.push("Invalid details format");
+    } else {
+      let noValueDetail = false;
+      for (let i = 0; i < detailsArr.length; i++) {
+        const [detailKey] = Object.keys(detailsArr[i]);
+        if (!detailsArr[i][detailKey]) {
+          noValueDetail = true;
+          break;
+        }
+      }
+      if (noValueDetail) errors.push("All details must have their value");
     }
 
     if (!name || !name.trim()) {
@@ -127,7 +156,18 @@ exports.add = async (req, res) => {
         totalAmount,
         img: `device-imgs/${fileName}`,
       });
-      if (deviceCreated) this.all(req, res);
+
+      if (deviceCreated) {
+        detailsArr.forEach(async (detail) => {
+          const [detailKey] = Object.keys(detail);
+          await DeviceDetail.create({
+            detailId: detailKey,
+            value: detail[detailKey],
+            deviceId: deviceCreated.id,
+          });
+        });
+        this.all(req, res);
+      }
     } else {
       return res.status(422).send({ errors });
     }
