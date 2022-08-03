@@ -23,8 +23,8 @@ exports.add = async (req, res) => {
     const rateExist = await Rating.count({ where: { deviceId, userId } });
     if (rateExist) {
       return res
-        .status(422)
-        .send({ msg: "this device is already rated by you" });
+        .status(204)
+        .send();
     }
 
     try {
