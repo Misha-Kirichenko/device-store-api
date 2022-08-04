@@ -87,8 +87,12 @@ exports.all = async (req, res) => {
 exports.add = async (req, res) => {
   const { name, price, brandId, typeId, descr, totalAmount, details } =
     req.body;
-  const detailsArr = JSON.parse(details);
+  let detailsArr = false;
   const errors = [];
+
+  if (details) {
+    detailsArr = JSON.parse(details);
+  }
 
   try {
     if (!req.files) {
@@ -97,8 +101,8 @@ exports.add = async (req, res) => {
       errors.push("unsupported file extension");
     }
 
-    if (!Array.isArray(detailsArr)) {
-      errors.push("Invalid details format");
+    if (detailsArr && !Array.isArray(detailsArr)) {
+      errors.push("Invalid details format or no details passed");
     } else {
       let noValueDetail = false;
       for (let i = 0; i < detailsArr.length; i++) {
@@ -158,20 +162,24 @@ exports.add = async (req, res) => {
       });
 
       if (deviceCreated) {
-        const addDetails = async () => {
-          for (let detail of detailsArr) {
-            const [detailKey] = Object.keys(detail);
-            await DeviceDetail.create({
-              detailId: detailKey,
-              value: detail[detailKey],
-              deviceId: deviceCreated.id,
-            });
-          }
-          return true;
-        };
+        if (detailsArr) {
+          const addDetails = async () => {
+            for (let detail of detailsArr) {
+              const [detailKey] = Object.keys(detail);
+              await DeviceDetail.create({
+                detailId: detailKey,
+                value: detail[detailKey],
+                deviceId: deviceCreated.id,
+              });
+            }
+            return true;
+          };
 
-        const detailsAdded = await addDetails();
-        if (detailsAdded) this.all(req, res);
+          const detailsAdded = await addDetails();
+          if (detailsAdded) this.all(req, res);
+        } else {
+          this.all(req, res);
+        }
       }
     } else {
       return res.status(422).send({ errors });
