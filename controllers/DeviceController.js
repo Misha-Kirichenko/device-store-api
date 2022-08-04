@@ -158,15 +158,20 @@ exports.add = async (req, res) => {
       });
 
       if (deviceCreated) {
-        detailsArr.forEach(async (detail) => {
-          const [detailKey] = Object.keys(detail);
-          await DeviceDetail.create({
-            detailId: detailKey,
-            value: detail[detailKey],
-            deviceId: deviceCreated.id,
-          });
-        });
-        this.all(req, res);
+        const addDetails = async () => {
+          for (let detail of detailsArr) {
+            const [detailKey] = Object.keys(detail);
+            await DeviceDetail.create({
+              detailId: detailKey,
+              value: detail[detailKey],
+              deviceId: deviceCreated.id,
+            });
+          }
+          return true;
+        };
+
+        const detailsAdded = await addDetails();
+        if (detailsAdded) this.all(req, res);
       }
     } else {
       return res.status(422).send({ errors });
