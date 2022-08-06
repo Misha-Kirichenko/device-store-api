@@ -220,7 +220,12 @@ exports.one = async (req, res) => {
   try {
     const one = await Device.findOne({
       where: { id },
-      include: [{ model: Type }, { model: Brand }, { model: Rating }],
+      include: [
+        { model: Type },
+        { model: Brand },
+        { model: Rating },
+        { model: Detail },
+      ],
     });
     if (one) return res.send(one);
     else res.status(404).send({ msg: `row with id:${id} not found!` });
@@ -365,6 +370,21 @@ exports.update = async (req, res) => {
   } catch (err) {
     return res.status(422).send({ msg: err.message });
   }
+};
+
+exports.deleteDetail = async (req, res) => {
+  const { id: deviceId } = req.params;
+  const { detailId } = req.body;
+
+  const deleted = await DeviceDetail.destroy({
+    where: { deviceId, detailId },
+  });
+
+  if (deleted) this.one(req, res);
+  else
+    return res
+      .status(404)
+      .send({ msg: `device detail with id:${detailId} is not found` });
 };
 
 exports.massRemove = async (req, res) => {

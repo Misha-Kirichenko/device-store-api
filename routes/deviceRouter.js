@@ -15,4 +15,10 @@ router
   .delete([verifyToken, checkRole], DeviceController.remove)
   .patch([verifyToken, checkRole], DeviceController.update);
 
+router.delete(
+  "/deleteDeviceDetail/:id",
+  [verifyToken, checkRole],
+  DeviceController.deleteDetail
+);
+
 module.exports = router;
