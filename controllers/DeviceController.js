@@ -145,12 +145,6 @@ exports.add = async (req, res) => {
       const imgExt = imgInfo[imgInfo.length - 1];
       const fileName = `${uuid.v4()}.${imgExt}`;
 
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
-
-      await img.mv(path.resolve(__dirname, "..", uploadPath, fileName));
-
       const deviceCreated = await Device.create({
         name,
         price,
@@ -162,6 +156,11 @@ exports.add = async (req, res) => {
       });
 
       if (deviceCreated) {
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        await img.mv(path.resolve(__dirname, "..", uploadPath, fileName));
+
         if (detailsArr) {
           const addDetails = async () => {
             for (let detail of detailsArr) {
