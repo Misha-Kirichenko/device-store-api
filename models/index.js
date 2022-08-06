@@ -4,6 +4,8 @@ const User = require("./User.js")(conn, DataTypes);
 const Device = require("./Device.js")(conn, DataTypes);
 const Type = require("./Type.js")(conn, DataTypes);
 const Brand = require("./Brand.js")(conn, DataTypes);
+const Detail = require("./Detail.js")(conn, DataTypes);
+const DeviceDetail = require("./DeviceDetail.js")(conn, DataTypes);
 const Rating = require("./Rating.js")(conn, DataTypes);
 //Establish Relationships
 User.hasMany(Rating, { foreignKey: { allowNull: false } });
@@ -26,10 +28,20 @@ Device.hasMany(Rating, {
 });
 Rating.belongsTo(Device);
 
+Detail.belongsToMany(Device, {
+  through: DeviceDetail,
+});
+Device.belongsToMany(Detail, {
+  through: DeviceDetail,
+  onDelete: "cascade",
+});
+
 module.exports = {
   User,
   Device,
   Type,
   Brand,
   Rating,
+  Detail,
+  DeviceDetail,
 };
