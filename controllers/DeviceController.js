@@ -101,7 +101,7 @@ exports.add = async (req, res) => {
       errors.push("unsupported file extension");
     }
 
-    if (detailsArr && !Array.isArray(detailsArr)) {
+    if (!detailsArr.length || !Array.isArray(detailsArr)) {
       errors.push("Invalid details format or no details passed");
     } else {
       let noValueDetail = false;
@@ -204,7 +204,7 @@ exports.remove = async (req, res) => {
   try {
     const { img: imgPath } = deviceRow;
 
-    if (!fs.existsSync(`./img/${imgPath}`)) {
+    if (fs.existsSync(`./img/${imgPath}`)) {
       fs.unlinkSync(`./img/${imgPath}`);
     }
 
@@ -230,15 +230,21 @@ exports.one = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const { id } = req.params;
+  const { id: deviceId } = req.params;
   try {
-    const found = await Device.findOne({ where: { id } });
+    const found = await Device.findOne({ where: { id: deviceId } });
     let fileName;
 
     if (found) {
       const updateObj = {};
       const errors = [];
-      const { name, price, brandId, typeId, descr, totalAmount } = req.body;
+      const { name, price, brandId, typeId, descr, totalAmount, details } =
+        req.body;
+      let detailsArr = false;
+
+      if (details) {
+        detailsArr = JSON.parse(details);
+      }
 
       if (
         !name &&
@@ -296,6 +302,27 @@ exports.update = async (req, res) => {
         }
       }
 
+      if (detailsArr) {
+        if (!detailsArr.length || !Array.isArray(detailsArr)) {
+          errors.push("Invalid details format or no details passed");
+        } else {
+          const ids = [];
+          detailsArr.forEach((detail) => {
+            const [id] = Object.keys(detail);
+            ids.push(id);
+          });
+          const foundDetails = await Detail.findAndCountAll({
+            where: { id: { [Op.in]: ids } },
+          });
+
+          if (foundDetails.count !== ids.length) {
+            errors.push(
+              "Not all details found, please make sure you pass correct ids"
+            );
+          }
+        }
+      }
+
       if (errors.length) return res.status(422).send({ errors });
       else {
         if (updateObj.img) {
@@ -305,8 +332,34 @@ exports.update = async (req, res) => {
           await img.mv(path.resolve(__dirname, "..", uploadPath, fileName));
         }
 
-        const deviceUpdate = await Device.update(updateObj, { where: { id } });
-        if (deviceUpdate) this.all(req, res);
+        const deviceUpdate = await Device.update(updateObj, {
+          where: { id: deviceId },
+        });
+
+        if (deviceUpdate) {
+          if (detailsArr) {
+            const detailsAddedOrUpdated = async () => {
+              for (let detail of detailsArr) {
+                const [id] = Object.keys(detail);
+                const [updatedDetail] = await DeviceDetail.update(
+                  { value: detail[id] },
+                  { where: { detailId: id, deviceId } }
+                );
+
+                if (!updatedDetail) {
+                  await DeviceDetail.create({
+                    detailId: id,
+                    value: detail[id],
+                    deviceId,
+                  });
+                }
+              }
+              return true;
+            };
+            const addOrUpdate = await detailsAddedOrUpdated();
+            if (addOrUpdate) this.all(req, res);
+          } else this.all(req, res);
+        }
       }
     } else res.status(404).send({ msg: `row with id:${id} not found!` });
   } catch (err) {

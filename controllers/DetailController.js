@@ -41,8 +41,9 @@ exports.update = async (req, res) => {
     if (!name) {
       return res.status(422).send({ msg: "Name is required" });
     }
-    const detailUpdated = await Detail.update({ name }, { where: { id } });
+    const [detailUpdated] = await Detail.update({ name }, { where: { id } });
     if (detailUpdated) this.all(req, res);
+    else return res.status(404).send({ msg: "No detail found" });
   } catch (err) {
     return res.status(422).send({ msg: err.message });
   }
