@@ -25,6 +25,7 @@ Device.belongsTo(Brand);
 
 Device.hasMany(Rating, {
   foreignKey: { allowNull: false },
+  onDelete: "cascade",
 });
 Rating.belongsTo(Device);
 
