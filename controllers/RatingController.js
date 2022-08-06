@@ -1,4 +1,4 @@
-const { Rating, Brand, Type, Device } = require("../models");
+const { Rating, Brand, Type, Device, Detail } = require("../models");
 
 exports.add = async (req, res) => {
   const errors = [];
@@ -32,7 +32,12 @@ exports.add = async (req, res) => {
       if (addedRate)
         return res.send(
           await Device.findAll({
-            include: [{ model: Type }, { model: Brand }, { model: Rating }],
+            include: [
+              { model: Type },
+              { model: Brand },
+              { model: Rating },
+              { model: Detail },
+            ],
           })
         );
     } catch (err) {
@@ -52,7 +57,12 @@ exports.remove = async (req, res) => {
     if (deleted)
       return res.send(
         await Device.findAll({
-          include: [{ model: Type }, { model: Brand }, { model: Rating }],
+          include: [
+            { model: Type },
+            { model: Brand },
+            { model: Rating },
+            { model: Detail },
+          ],
         })
       );
     return res.status(404).send({ msg: "Device rating wasn't found" });
