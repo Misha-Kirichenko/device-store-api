@@ -34,8 +34,8 @@ exports.registration = async (req, res) => {
     body.password = bcrypt.hashSync(password, 10);
     const created = await User.create(body);
     if (created) {
-      const { id, email, role } = created;
-      const token = genToken({ id, email, role });
+      const { fullName, email, role } = created;
+      const token = genToken({ fullName, email, role });
       return res.send({ email, token });
     }
   } catch (err) {

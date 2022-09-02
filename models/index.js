@@ -7,11 +7,13 @@ const Brand = require("./Brand.js")(conn, DataTypes);
 const Detail = require("./Detail.js")(conn, DataTypes);
 const DeviceDetail = require("./DeviceDetail.js")(conn, DataTypes);
 const Rating = require("./Rating.js")(conn, DataTypes);
+const Order = require("./Order.js")(conn, DataTypes);
 //Establish Relationships
 User.hasMany(Rating, { foreignKey: { allowNull: false } });
 Rating.belongsTo(User, {
   foreignKey: { allowNull: false },
 });
+User.hasMany(Order, { foreignKey: { allowNull: false } });
 
 Type.hasMany(Device, {
   foreignKey: { allowNull: false },
@@ -44,4 +46,5 @@ module.exports = {
   Rating,
   Detail,
   DeviceDetail,
+  Order,
 };
